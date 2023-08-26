@@ -1,4 +1,4 @@
-# CSV TO REDIS
+## CSV to Redis
 
 ```
 Upload a CSV file to Redis. The tool will create a key for each column and row.
@@ -11,6 +11,7 @@ Flags:
       --config string             config file (default is $HOME/.csvtoredis.yaml)
   -s, --csv string                CSV file to read from
   -h, --help                      help for csvtoredis
+      --just-text                 Plain text output
   -r, --redis-host string         Redis host (default "localhost")
   -k, --redis-key-prefix string   Redis key prefix
   -w, --redis-password string     Redis password
@@ -33,14 +34,31 @@ And translate it into Redis entries
 
 <img width="800" src="csv-to-redis-1.png">
 
+## Pre-built binaries
+
+Binaries for Windows, Mac and Linux are available in the Releases section. 
+
 ## Build
+
+If on the other hand, you prefer to build the app yourself, the process is quite simple:
+
+- install Go
+
+Installation steps specific to your OS can be found in the official docs [here](https://go.dev/doc/install)
+
+On a Mac:
 
 ```bash
 brew install go
+```
+
+- build the package
+
+```bash
 go build
 ```
 
-### Build for Windows
+- Build for Windows
 
 This assumes you're on a Mac or Linux
 

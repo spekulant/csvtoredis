@@ -24,6 +24,7 @@ package cmd
 import (
 	"csvtoredis/pkg"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -41,14 +42,29 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		csv_source := pkg.NewCSVSource()
-		csv_source.ReadCSV(viper.GetString("csv"))
+		err := csv_source.ReadCSV(viper.GetString("csv"))
+		if err != nil {
+			log.Println("Error reading CSV file")
+			log.Println(err)
+			return
+		}
+
+		just_text := viper.GetBool("just-text")
+		if just_text {
+			csv_source.Print(viper.GetString("redis-key-prefix"))
+			return
+		}
 
 		redis_target := pkg.NewRedisTarget()
 		redis_target.Host = viper.GetString("redis-host")
 		redis_target.Port = viper.GetString("redis-port")
 		redis_target.Password = viper.GetString("redis-password")
 
-		redis_target.WriteToRedis(csv_source, viper.GetString("redis-key-prefix"))
+		err = redis_target.WriteToRedis(csv_source, viper.GetString("redis-key-prefix"))
+		if err != nil {
+			log.Println("Error writing to Redis")
+			log.Println(err)
+		}
 	},
 }
 
@@ -68,14 +84,14 @@ func init() {
 	rootCmd.PersistentFlags().StringP("redis-port", "p", "6379", "Redis port")
 	rootCmd.PersistentFlags().StringP("redis-password", "w", "", "Redis password")
 	rootCmd.PersistentFlags().StringP("redis-key-prefix", "k", "", "Redis key prefix")
+	rootCmd.PersistentFlags().Bool("just-text", false, "Plain text output (dry-run)")
 
 	viper.BindPFlag("csv", rootCmd.PersistentFlags().Lookup("csv"))
 	viper.BindPFlag("redis-host", rootCmd.PersistentFlags().Lookup("redis-host"))
 	viper.BindPFlag("redis-port", rootCmd.PersistentFlags().Lookup("redis-port"))
 	viper.BindPFlag("redis-password", rootCmd.PersistentFlags().Lookup("redis-password"))
 	viper.BindPFlag("redis-key-prefix", rootCmd.PersistentFlags().Lookup("redis-key-prefix"))
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	viper.BindPFlag("just-text", rootCmd.PersistentFlags().Lookup("just-text"))
 }
 
 // initConfig reads in config file and ENV variables if set.
